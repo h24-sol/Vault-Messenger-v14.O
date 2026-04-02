@@ -1,0 +1,42 @@
+name: Build Vault V14 APK
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Capacitor & Dependencies
+        run: |
+          npm install @capacitor/cli@6.0.0 @capacitor/core@6.0.0 @capacitor/android@6.0.0
+
+      - name: Initialize Android Project
+        run: |
+          npx cap init "Vault V14" com.vault.v14 --web-dir=.
+          npx cap add android
+
+      - name: Build APK
+        run: |
+          npx cap copy
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload Final APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vault-V14-Official-Build
+          path: android/app/build/outputs/apk/debug/app-debug.apk
